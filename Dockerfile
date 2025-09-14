@@ -7,33 +7,19 @@ RUN pip install --no-cache-dir uv
 # Set working directory
 WORKDIR /app
 
-# Copy pyproject and lock file first (better caching)
+# Copy pyproject and lock file first for better caching
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies with uv
 RUN uv sync --frozen
 
-# Copy rest of the app
+# Copy the rest of the app
 COPY . .
 
-# Configure Streamlit: bind to $PORT and use /home instead of /temp
-RUN mkdir -p /root/.streamlit
-RUN echo "\
-[server]\n\
-headless = true\n\
-enableCORS = false\n\
-port = $PORT\n\
-address = \"0.0.0.0\"\n\
-\n\
-[global]\n\
-tmpDir = \"/home\"\n\
-" > /root/.streamlit/config.toml
-
-# Default port for local testing (Azure overrides with $PORT)
+# Azure will set this PORT environment variable at runtime.
+# Default to 8501 for local testing.
 ENV PORT=8501
 
-# Expose for local debugging
-EXPOSE 8501
+# Start Streamlit, telling it explicitly to use the PORT from the environment
+CMD sh -c "streamlit run main.py --server.port=$PORT --server.address=0.0.0.0"
 
-# Start Streamlit app
-CMD ["streamlit", "run", "main.py"]
