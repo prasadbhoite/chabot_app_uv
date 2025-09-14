@@ -1,39 +1,39 @@
 # Use slim Python base image
 FROM python:3.11-slim
 
-# Install uv (fast dependency manager)
+# Install uv
 RUN pip install --no-cache-dir uv
 
 # Set working directory
 WORKDIR /app
 
-# Copy pyproject and lock file first (better caching)
+# Copy dependency files first (for layer caching)
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies with uv (system-wide in container)
-RUN uv sync --frozen --system
+# Install dependencies into system environment (no venv)
+RUN uv pip install --system --frozen .
 
 # Copy rest of the app
 COPY . .
 
-# Configure Streamlit: bind to $PORT and use /home instead of /temp
-RUN mkdir -p /root/.streamlit
-RUN echo "\
+# Configure Streamlit
+RUN mkdir -p /root/.streamlit && \
+    echo "\
 [server]\n\
 headless = true\n\
 enableCORS = false\n\
-port = $PORT\n\
+port = \$PORT\n\
 address = \"0.0.0.0\"\n\
 \n\
 [global]\n\
 tmpDir = \"/home\"\n\
 " > /root/.streamlit/config.toml
 
-# Default port for local testing (Azure overrides with $PORT)
+# Default for local testing
 ENV PORT=8501
 
-# Expose for local debugging
+# Expose for local run (Azure ignores)
 EXPOSE 8501
 
-# Start Streamlit app
+# Run Streamlit
 CMD ["streamlit", "run", "main.py"]
