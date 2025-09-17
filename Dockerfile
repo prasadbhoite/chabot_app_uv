@@ -24,6 +24,6 @@ EXPOSE 8080
 
 # Define the command to run when the container starts.
 # We use the ABSOLUTE PATH to streamlit to guarantee it is found.
-# The `sh -c` syntax ensures that the `$PORT` variable provided by Azure at runtime is used.
-CMD sh -c "/app/.venv/bin/streamlit run main.py --server.port=$PORT --server.address=0.0.0.0"
+# Azure sets PORT variable and an empty STREAMLIT_SERVER_PORT - we unset the latter to avoid conflicts
+CMD sh -c "unset STREAMLIT_SERVER_PORT && /app/.venv/bin/streamlit run main.py --server.port=$PORT --server.address=0.0.0.0"
 
