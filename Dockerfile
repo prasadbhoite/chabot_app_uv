@@ -24,6 +24,6 @@ EXPOSE 8080
 
 # Define the command to run when the container starts.
 # We use the ABSOLUTE PATH to streamlit to guarantee it is found.
-# Azure sets PORT variable and an empty STREAMLIT_SERVER_PORT - we unset the latter to avoid conflicts
-CMD sh -c "unset STREAMLIT_SERVER_PORT && /app/.venv/bin/streamlit run main.py --server.port=$PORT --server.address=0.0.0.0"
+# Use env -u to remove the problematic STREAMLIT_SERVER_PORT variable
+CMD sh -c "env -u STREAMLIT_SERVER_PORT /app/.venv/bin/streamlit run main.py --server.port=\${PORT:-8080} --server.address=0.0.0.0"
 
