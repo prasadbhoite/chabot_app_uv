@@ -22,13 +22,7 @@ COPY . .
 # We don't need to set our own PORT variable, as Azure provides it.
 EXPOSE 8080
 
-# Create startup script to handle environment variables
-RUN echo '#!/bin/bash' > /app/start.sh && \
-    echo 'export PORT=${PORT:-8080}' >> /app/start.sh && \
-    echo 'unset STREAMLIT_SERVER_PORT' >> /app/start.sh && \
-    echo 'exec /app/.venv/bin/streamlit run main.py --server.port=$PORT --server.address=0.0.0.0' >> /app/start.sh && \
-    chmod +x /app/start.sh
-
-# Use the startup script
-CMD ["/app/start.sh"]
+# Define the command to run when the container starts.
+# Set PORT with fallback and avoid using STREAMLIT_SERVER_PORT completely
+CMD ["/bin/bash", "-c", "PORT=${PORT:-8080} && /app/.venv/bin/streamlit run main.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true"]
 
